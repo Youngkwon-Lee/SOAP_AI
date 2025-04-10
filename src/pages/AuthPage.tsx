@@ -82,64 +82,66 @@ const AuthPage: React.FC = () => {
   };
 
   return (
-    <div className="auth-container">
-      <div className="auth-card">
-        <h2>{isLogin ? '로그인' : '회원가입'}</h2>
-        
-        {error && <div className="auth-error">{error}</div>}
-        
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label>이메일</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
+    <div className="auth-page">
+      <div className="auth-container">
+        <div className="auth-card">
+          <h2>{isLogin ? '로그인' : '회원가입'}</h2>
           
-          <div className="form-group">
-            <label>비밀번호</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
+          {error && <div className="auth-error">{error}</div>}
+          
+          <form onSubmit={handleSubmit}>
+            <div className="form-group">
+              <label>이메일</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+            
+            <div className="form-group">
+              <label>비밀번호</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+            
+            <button 
+              type="submit" 
+              className="auth-button" 
+              disabled={loading}
+            >
+              {loading ? '처리 중...' : isLogin ? '로그인' : '회원가입'}
+            </button>
+          </form>
+          
+          <div className="auth-divider">
+            <span>또는</span>
           </div>
           
           <button 
-            type="submit" 
-            className="auth-button" 
+            className="google-button" 
+            onClick={handleGoogleSignIn} 
             disabled={loading}
           >
-            {loading ? '처리 중...' : isLogin ? '로그인' : '회원가입'}
+            Google로 계속하기
           </button>
-        </form>
-        
-        <div className="auth-divider">
-          <span>또는</span>
+          
+          <p className="auth-toggle">
+            {isLogin ? '계정이 없으신가요?' : '이미 계정이 있으신가요?'}
+            <button 
+              type="button" 
+              onClick={toggleAuthMode} 
+              className="toggle-link"
+            >
+              {isLogin ? '회원가입' : '로그인'}
+            </button>
+          </p>
         </div>
-        
-        <button 
-          className="google-button" 
-          onClick={handleGoogleSignIn} 
-          disabled={loading}
-        >
-          Google로 계속하기
-        </button>
-        
-        <p className="auth-toggle">
-          {isLogin ? '계정이 없으신가요?' : '이미 계정이 있으신가요?'}
-          <button 
-            type="button" 
-            onClick={toggleAuthMode} 
-            className="toggle-link"
-          >
-            {isLogin ? '회원가입' : '로그인'}
-          </button>
-        </p>
       </div>
     </div>
   );

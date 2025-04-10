@@ -210,7 +210,7 @@ const SoapNotePage: React.FC = () => {
 
         <section className="notes-section">
           <h2>진료 노트</h2>
-          {method === 'voice' ? (
+          {method === 'voice' && (
             <div className="voice-input">
               <div className="voice-controls">
                 <button
@@ -220,22 +220,21 @@ const SoapNotePage: React.FC = () => {
                 >
                   {isRecording ? '녹음 중지' : '녹음 시작'} 🎙️
                 </button>
-                <div className="upload-button">
-                  <input
-                    type="file"
-                    accept="audio/*"
-                    onChange={handleFileUpload}
-                    ref={fileInputRef}
-                    style={{ display: 'none' }}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    className="upload-audio-button"
-                  >
-                    오디오 파일 업로드 📁
-                  </button>
-                </div>
+                <input
+                  type="file"
+                  accept="audio/*"
+                  onChange={handleFileUpload}
+                  ref={fileInputRef}
+                  id="audio-upload"
+                  style={{ display: 'none' }}
+                />
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="record-button upload"
+                >
+                  오디오 파일 업로드 📁
+                </button>
               </div>
               {isRecording && <div className="recording-indicator">녹음 중...</div>}
               {(audioBlob || uploadedFile) && (
@@ -249,7 +248,7 @@ const SoapNotePage: React.FC = () => {
                 </div>
               )}
             </div>
-          ) : null}
+          )}
           <textarea
             value={shorthandNotes}
             onChange={handleNotesChange}
