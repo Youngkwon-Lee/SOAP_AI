@@ -8,12 +8,14 @@ import EditNotePage from './pages/EditNotePage';
 import AuthPage from './pages/AuthPage';
 import PatientsPage from './pages/PatientsPage';
 import PrivateRoute from './components/PrivateRoute';
+import ErrorBoundary from './components/ErrorBoundary';
 import { AuthProvider } from './contexts/AuthContext';
 import AudioSoapNote from './pages/AudioSoapNote';
 import SoapNotePage from './pages/SoapNotePage';
 
 function App() {
   return (
+    <ErrorBoundary>
     <AuthProvider>
       <Router>
         <div className="app">
@@ -56,6 +58,7 @@ function App() {
         </div>
       </Router>
     </AuthProvider>
+    </ErrorBoundary>
   );
 }
 

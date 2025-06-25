@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/HomePage.css';
+import { SUPPORTED_SPECIALTIES } from '../services/defaultTemplates';
 
 interface Specialty {
   id: string;
@@ -18,16 +19,20 @@ const professions: Profession[] = [
     id: 'doctor',
     name: '의사',
     specialties: [
+      // 기본 템플릿이 있는 전문과들 (우선 표시)
       { id: 'internal', name: '내과' },
+      { id: 'surgery', name: '외과' },
+      { id: 'family', name: '가정의학과' },
+      { id: 'emergency', name: '응급의학과' },
+      { id: 'orthopedics', name: '정형외과' },
+      // 기타 전문과들
       { id: 'cardiology', name: '순환기내과' },
       { id: 'gastroenterology', name: '소화기내과' },
       { id: 'endocrinology', name: '내분비내과' },
       { id: 'neurology', name: '신경과' },
       { id: 'rehabilitation', name: '재활의학과' },
-      { id: 'orthopedics', name: '정형외과' },
       { id: 'psychiatry', name: '정신건강의학과' },
       { id: 'pediatrics', name: '소아과' },
-      { id: 'family', name: '가정의학과' },
       { id: 'dermatology', name: '피부과' },
       { id: 'ophthalmology', name: '안과' },
       { id: 'otolaryngology', name: '이비인후과' },
@@ -99,12 +104,13 @@ const HomePage: React.FC = () => {
         method: method
       });
 
-      if (method === 'text') {
-        navigate(`/soap-note?${params.toString()}`);
-      } else {
-        navigate(`/soap-note?${params.toString()}`);
-      }
+      navigate(`/soap-note?${params.toString()}`);
     }
+  };
+
+  // 기본 템플릿이 있는 전문과인지 확인
+  const hasTemplate = (specialtyName: string) => {
+    return SUPPORTED_SPECIALTIES.includes(specialtyName);
   };
 
   const selectedProfessionData = professions.find(p => p.id === selectedProfession);
@@ -143,12 +149,24 @@ const HomePage: React.FC = () => {
               <option value="">세부전공을 선택하세요</option>
               {selectedProfessionData?.specialties.map(specialty => (
                 <option key={specialty.id} value={specialty.id}>
-                  {specialty.name}
+                  {specialty.name} {hasTemplate(specialty.name) ? '📋' : ''}
                 </option>
               ))}
             </select>
           </div>
         </div>
+
+        {selectedSpecialty && (
+          <div className="selected-info">
+            <h3>선택한 전문과</h3>
+            <p>
+              {selectedProfessionData?.specialties.find(s => s.id === selectedSpecialty)?.name}
+              {hasTemplate(selectedProfessionData?.specialties.find(s => s.id === selectedSpecialty)?.name || '') && (
+                <span className="template-badge">📋 기본 템플릿 사용 가능</span>
+              )}
+            </p>
+          </div>
+        )}
 
         <div className="method-buttons">
           <button

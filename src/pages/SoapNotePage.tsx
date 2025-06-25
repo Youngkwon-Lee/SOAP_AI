@@ -5,12 +5,21 @@ import { startRecording, stopRecording } from '../services/audioService';
 import { Template, PatientInfo } from '../types';
 import '../styles/SoapNotePage.css';
 import TemplateManager from '../components/TemplateManager';
+import SpecialtySelector from '../components/SpecialtySelector';
+import PersonalizationDashboard from '../components/PersonalizationDashboard';
+import LoadingSpinner from '../components/LoadingSpinner';
+import { useAutoSave } from '../hooks/useAutoSave';
+import { useKeyboardShortcuts, createSoapNoteShortcuts } from '../hooks/useKeyboardShortcuts';
+import { getTemplateBySpecialty } from '../services/defaultTemplates';
+import { analyzeAndStorePattern } from '../services/personalizationEngine';
 
 const SoapNotePage: React.FC = () => {
-  const [searchParams] = useSearchParams();
-  const profession = searchParams.get('profession') || '';
-  const specialty = searchParams.get('specialty') || '';
+  const [searchParams, setSearchParams] = useSearchParams();
+  const profession = searchParams.get('profession') || 'doctor';
+  const [selectedSpecialty, setSelectedSpecialty] = useState(searchParams.get('specialty') || '');
   const method = searchParams.get('method') || 'text';
+  
+  const [selectedLanguage, setSelectedLanguage] = useState<'ko' | 'en' | 'medical'>('ko');
   
   const [isRecording, setIsRecording] = useState(false);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
@@ -29,8 +38,29 @@ const SoapNotePage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
+  const [showShortcutHelp, setShowShortcutHelp] = useState(false);
 
-  const handlePatientInfoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // 자동 저장 데이터 타입 정의
+  interface AutoSaveData {
+    patientInfo: typeof patientInfo;
+    shorthandNotes: string;
+    selectedTemplate: Template | null;
+  }
+
+  // 자동 저장 설정
+  const autoSaveData: AutoSaveData = {
+    patientInfo,
+    shorthandNotes,
+    selectedTemplate
+  };
+
+  const { loadFromLocal, clearLocal, hasSavedData } = useAutoSave(autoSaveData, {
+    key: `soap-note-${profession}-${selectedSpecialty}`,
+    delay: 3000,
+    enabled: true
+  });
+
+  const handlePatientInfoChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setPatientInfo(prev => ({
       ...prev,
@@ -117,19 +147,78 @@ const SoapNotePage: React.FC = () => {
     setShorthandNotes(template.example);
   };
 
+  // 저장된 데이터 복원
+  useEffect(() => {
+    if (hasSavedData()) {
+      const savedData = loadFromLocal();
+      if (savedData && window.confirm('이전에 작성 중이던 내용이 있습니다. 복원하시겠습니까?')) {
+        setPatientInfo(savedData.patientInfo);
+        setShorthandNotes(savedData.shorthandNotes);
+        setSelectedTemplate(savedData.selectedTemplate);
+      }
+    }
+  }, [hasSavedData, loadFromLocal]);
+
+  // 키보드 단축키 설정
+  const shortcuts = createSoapNoteShortcuts({
+    generate: () => {
+      if (!isLoading && patientInfo.name && shorthandNotes) {
+        handleSubmit(new Event('submit') as any);
+      }
+    },
+    clear: () => {
+      if (window.confirm('작성 중인 내용을 모두 지우시겠습니까?')) {
+        setPatientInfo({
+          name: '',
+          age: '',
+          gender: '',
+          visitDate: new Date().toISOString().split('T')[0]
+        });
+        setShorthandNotes('');
+        setSoapNote(null);
+        clearLocal();
+      }
+    },
+    toggleRecording: () => {
+      if (method === 'voice') {
+        if (isRecording) {
+          handleStopRecording();
+        } else {
+          handleStartRecording();
+        }
+      }
+    }
+  });
+
+  const { getShortcutHelp } = useKeyboardShortcuts(shortcuts, { enabled: true });
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
     try {
       const result = await generateSoapNote({
-        noteType: specialty,
+        noteType: selectedSpecialty,
         patientInfo,
         shorthandNotes: shorthandNotes || transcribedText,
-        language: 'ko',
-        template: selectedTemplate?.format // 템플릿 형식 전달
+        language: selectedLanguage,
+        template: selectedTemplate?.format
       });
       setSoapNote(result);
+      
+      // SOAP 노트 생성 성공 시 개인화 패턴 학습
+      if (result && selectedSpecialty) {
+        try {
+          await analyzeAndStorePattern(result, selectedSpecialty);
+          console.log('✅ 개인화 패턴 학습 완료');
+        } catch (patternError) {
+          console.error('개인화 패턴 학습 실패:', patternError);
+          // 학습 실패해도 SOAP 노트 생성은 성공으로 처리
+        }
+      }
+      
+      // SOAP 노트 생성 성공 시 자동 저장 데이터 삭제
+      clearLocal();
     } catch (err) {
       setError('SOAP 노트 생성 중 오류가 발생했습니다.');
       console.error('Error generating SOAP note:', err);
@@ -140,18 +229,109 @@ const SoapNotePage: React.FC = () => {
 
   return (
     <div className="soap-note-page">
+      {isLoading && <LoadingSpinner overlay message="SOAP 노트를 생성하고 있습니다..." />}
+      
       <header className="page-header">
-        <h1>{specialty} SOAP 노트 작성</h1>
+        <h1>{selectedSpecialty} SOAP 노트 작성</h1>
         <p>{profession} | {method === 'text' ? '텍스트' : '음성'} 입력</p>
+        <div className="header-controls">
+          <button 
+            type="button" 
+            onClick={() => setShowShortcutHelp(!showShortcutHelp)}
+            className="shortcut-help-button"
+            title="키보드 단축키 도움말"
+          >
+            ⌨️ 단축키
+          </button>
+          
+          <div className="language-selector">
+            <label htmlFor="language">출력 언어:</label>
+            <select
+              id="language"
+              value={selectedLanguage}
+              onChange={(e) => setSelectedLanguage(e.target.value as 'ko' | 'en' | 'medical')}
+              className="language-dropdown"
+            >
+              <option value="ko">🇰🇷 한국어</option>
+              <option value="en">🇺🇸 English</option>
+              <option value="medical">🏥 Medical Terms</option>
+            </select>
+          </div>
+        </div>
       </header>
+
+      {selectedLanguage === 'medical' && (
+        <div className="language-info medical-info">
+          <p>📋 <strong>의학용어 모드:</strong> 의료진용 표준 약어와 영어 의학용어로 간결하게 작성됩니다.</p>
+        </div>
+      )}
+      {selectedLanguage === 'en' && (
+        <div className="language-info english-info">
+          <p>🇺🇸 <strong>English Mode:</strong> SOAP note will be generated in English for international standards.</p>
+        </div>
+      )}
 
       {error && <div className="error-message">{error}</div>}
 
+      {showShortcutHelp && (
+        <div className="shortcut-help">
+          <h3>키보드 단축키</h3>
+          <ul>
+            {getShortcutHelp().map((shortcut, index) => (
+              <li key={index}>
+                <kbd>{shortcut.combination}</kbd> - {shortcut.description}
+              </li>
+            ))}
+          </ul>
+          <button onClick={() => setShowShortcutHelp(false)}>닫기</button>
+        </div>
+      )}
+
+      <SpecialtySelector
+        selectedSpecialty={selectedSpecialty}
+        onSpecialtyChange={(newSpecialty) => {
+          setSelectedSpecialty(newSpecialty);
+          setSearchParams(prev => {
+            const newParams = new URLSearchParams(prev);
+            if (newSpecialty) {
+              newParams.set('specialty', newSpecialty);
+            } else {
+              newParams.delete('specialty');
+            }
+            return newParams;
+          });
+          // 전문과 변경 시 해당 기본 템플릿 자동 선택
+          if (newSpecialty) {
+            const defaultTemplate = getTemplateBySpecialty(newSpecialty);
+            if (defaultTemplate) {
+              setSelectedTemplate({
+                id: 'default',
+                ...defaultTemplate,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+              });
+            }
+          } else {
+            setSelectedTemplate(null);
+          }
+        }}
+      />
+
       <TemplateManager
         profession={profession}
-        specialty={specialty}
+        specialty={selectedSpecialty}
         onTemplateSelect={handleTemplateSelect}
       />
+
+      {selectedSpecialty && (
+        <PersonalizationDashboard
+          specialty={selectedSpecialty}
+          onTemplateGenerated={(template) => {
+            setSelectedTemplate(template);
+            alert('개인 맞춤 템플릿이 적용되었습니다!');
+          }}
+        />
+      )}
 
       <form onSubmit={handleSubmit} className="soap-form">
         <section className="patient-info-section">
@@ -185,7 +365,7 @@ const SoapNotePage: React.FC = () => {
                 id="gender"
                 name="gender"
                 value={patientInfo.gender}
-                onChange={handlePatientInfoChange as any}
+                onChange={handlePatientInfoChange}
                 required
               >
                 <option value="">선택하세요</option>
@@ -263,7 +443,14 @@ const SoapNotePage: React.FC = () => {
             className="submit-button"
             disabled={isLoading}
           >
-            {isLoading ? '생성 중...' : 'SOAP 노트 생성'}
+            {isLoading ? (
+              <>
+                <LoadingSpinner size="small" message="" />
+                생성 중...
+              </>
+            ) : (
+              'SOAP 노트 생성'
+            )}
           </button>
         </div>
       </form>

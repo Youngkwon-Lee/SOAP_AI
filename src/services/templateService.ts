@@ -1,5 +1,5 @@
 import { Template, TemplateFormData } from '../types';
-import { storage } from './firebaseConfig';
+import { storage, auth } from './firebaseConfig';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 // Firebase Firestore를 사용하여 템플릿을 저장하고 관리
@@ -20,11 +20,19 @@ import {
 
 const TEMPLATES_COLLECTION = 'templates';
 
-export const createTemplate = async (data: TemplateFormData): Promise<Template> => {
+export const createTemplate = async (data: TemplateFormData, isSystem: boolean = false): Promise<Template> => {
   try {
     const now = new Date().toISOString();
+    const currentUser = auth.currentUser;
+    
+    if (!currentUser && !isSystem) {
+      throw new Error('로그인이 필요합니다.');
+    }
+    
     const templateData = {
       ...data,
+      userId: isSystem ? 'system' : currentUser?.uid,
+      isSystemTemplate: isSystem,
       createdAt: now,
       updatedAt: now
     };
@@ -64,8 +72,14 @@ export const deleteTemplate = async (id: string): Promise<void> => {
 
 export const getTemplates = async (profession?: string, specialty?: string): Promise<Template[]> => {
   try {
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
+      throw new Error('로그인이 필요합니다.');
+    }
+
     let q: Query<DocumentData>;
     
+    // 시스템 템플릿 + 사용자 개인 템플릿 조회
     if (profession && specialty) {
       q = query(
         collection(db, TEMPLATES_COLLECTION),
@@ -82,10 +96,15 @@ export const getTemplates = async (profession?: string, specialty?: string): Pro
     }
 
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({
+    const allTemplates = querySnapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data()
     } as Template));
+
+    // 시스템 템플릿 또는 사용자 본인의 템플릿만 반환
+    return allTemplates.filter(template => 
+      template.userId === 'system' || template.userId === currentUser.uid
+    );
   } catch (error) {
     console.error('템플릿 조회 중 오류:', error);
     throw error;

@@ -240,4 +240,67 @@ h1 {
 .method-button.disabled {
   opacity: 0.7;
   cursor: not-allowed;
+}
+
+/* 선택한 전문과 정보 스타일 */
+.selected-info {
+  background: #f8fafc;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+  margin: 20px 0;
+  text-align: left;
+}
+
+.selected-info h3 {
+  margin: 0 0 10px 0;
+  color: #2c3e50;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.selected-info p {
+  margin: 0;
+  color: #4a5568;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.template-badge {
+  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* 드롭다운 옵션에서 템플릿 표시 개선 */
+.dropdown option {
+  padding: 8px;
+}
+
+/* 반응형 개선 */
+@media (max-width: 768px) {
+  .method-buttons {
+    flex-direction: column;
+  }
+  
+  .method-button {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .selected-info p {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .template-badge {
+    align-self: flex-start;
+  }
 } 

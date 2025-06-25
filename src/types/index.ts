@@ -20,6 +20,8 @@ export interface Template {
   specialty: string;
   format: string;
   example: string;
+  userId?: string;
+  isSystemTemplate?: boolean;
   createdAt: string;
   updatedAt: string;
 }
