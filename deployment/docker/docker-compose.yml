@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  soap-ai-app:
+    build:
+      context: ../../
+      dockerfile: deployment/docker/Dockerfile
+    container_name: soap-ai-production
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ../../ssl:/etc/nginx/ssl:ro
+      - nginx_logs:/var/log/nginx
+    environment:
+      - NODE_ENV=production
+    networks:
+      - soap-ai-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.soap-ai.rule=Host(`your-domain.com`)"
+      - "traefik.http.services.soap-ai.loadbalancer.server.port=80"
+
+  # Redis for caching (선택사항)
+  redis:
+    image: redis:7-alpine
+    container_name: soap-ai-redis
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    networks:
+      - soap-ai-network
+    command: redis-server --appendonly yes
+
+  # Nginx Proxy Manager (선택사항)
+  nginx-proxy-manager:
+    image: 'jc21/nginx-proxy-manager:latest'
+    container_name: soap-ai-proxy
+    restart: unless-stopped
+    ports:
+      - '8080:80'      # Public HTTP Port
+      - '8443:443'     # Public HTTPS Port
+      - '8081:81'      # Admin Web Port
+    volumes:
+      - npm_data:/data
+      - npm_ssl:/etc/letsencrypt
+    networks:
+      - soap-ai-network
+
+volumes:
+  nginx_logs:
+  redis_data:
+  npm_data:
+  npm_ssl:
+
+networks:
+  soap-ai-network:
+    driver: bridge
