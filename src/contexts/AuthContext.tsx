@@ -36,21 +36,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       console.log('🔍 Auth 상태 변경:', user ? '로그인됨' : '로그아웃됨');
       setCurrentUser(user);
       
-      // 사용자가 로그인했을 때 기본 템플릿 초기화 (임시 비활성화)
-      if (false && user) {
+      // 사용자가 로그인했을 때 기본 템플릿 초기화
+      if (user) {
         try {
-          console.log('📝 템플릿 초기화 시작...');
+          console.log('📝 사용자 로그인 확인, 템플릿 초기화 시작...');
           await initializeTemplatesForNewUser();
           console.log('✅ 기본 템플릿 초기화 완료');
         } catch (error) {
           console.error('❌ 기본 템플릿 초기화 실패:', error);
           // 오류가 발생해도 로그인 과정은 계속 진행
+          console.log('⚠️ 템플릿 초기화 실패했지만 앱은 계속 동작합니다');
         }
-      }
-      
-      // 템플릿 초기화 없이 바로 진행
-      if (user) {
-        console.log('👤 사용자 로그인 확인됨, 템플릿 초기화 건너뜀');
       }
       
       console.log('🏁 Auth 로딩 완료, loading을 false로 설정');

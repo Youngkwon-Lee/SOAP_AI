@@ -1,6 +1,7 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "SOAP AI",
+  "name": "AI 기반 SOAP 노트 생성 시스템",
+  "description": "의료진을 위한 스마트 SOAP 노트 작성 도구",
   "icons": [
     {
       "src": "favicon.ico",
@@ -10,16 +11,50 @@
     {
       "src": "logo192.png",
       "type": "image/png",
-      "sizes": "192x192"
+      "sizes": "192x192",
+      "purpose": "maskable"
     },
     {
       "src": "logo512.png",
       "type": "image/png",
-      "sizes": "512x512"
+      "sizes": "512x512",
+      "purpose": "any"
     }
   ],
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "theme_color": "#3b82f6",
+  "background_color": "#ffffff",
+  "orientation": "portrait-primary",
+  "categories": ["medical", "productivity", "business"],
+  "lang": "ko",
+  "scope": "/",
+  "shortcuts": [
+    {
+      "name": "새 SOAP 노트",
+      "short_name": "새 노트",
+      "description": "새로운 SOAP 노트 작성 시작",
+      "url": "/unified-soap-note",
+      "icons": [
+        {
+          "src": "logo192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "내 노트 보기",
+      "short_name": "노트 보기",
+      "description": "저장된 SOAP 노트 확인",
+      "url": "/all-notes",
+      "icons": [
+        {
+          "src": "logo192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ],
+  "prefer_related_applications": false,
+  "display_override": ["window-controls-overlay", "standalone"]
 }

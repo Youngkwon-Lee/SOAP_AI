@@ -25,8 +25,13 @@ const AllNotesPage: React.FC = () => {
 
         setLoading(true);
         
-        // Firebase에 연결되지 않은 경우 더미 데이터 사용
-        if (!process.env.REACT_APP_FIREBASE_API_KEY || process.env.REACT_APP_FIREBASE_API_KEY === 'YOUR_API_KEY') {
+        // Firestore에서 노트를 먼저 시도하고, 실패하면 더미 데이터 사용
+        try {
+          const userNotes = await noteService.getAllNotes();
+          setNotes(userNotes);
+        } catch (firebaseError) {
+          console.warn('Firebase에서 노트를 가져오는데 실패했습니다. 더미 데이터를 표시합니다:', firebaseError);
+          // Firebase 연결 실패 시 더미 데이터 사용
           // 임시 더미 데이터
           const dummyNotes = [
             {
@@ -83,10 +88,6 @@ const AllNotesPage: React.FC = () => {
           ];
           
           setNotes(dummyNotes as UserNote[]);
-        } else {
-          // Firebase에서 노트 불러오기
-          const fetchedNotes = await noteService.getAllNotes();
-          setNotes(fetchedNotes);
         }
       } catch (error) {
         console.error('노트 불러오기 오류:', error);

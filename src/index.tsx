@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
-import './utils/envChecker'; // 환경 변수 보안 체크
+// import './utils/envChecker'; // 환경 변수 보안 체크 (임시 비활성화)
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement

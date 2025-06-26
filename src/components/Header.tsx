@@ -1,21 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import '../App.css';
 import { useAuth } from '../contexts/AuthContext';
+import '../styles/Header.css';
 
 const Header: React.FC = () => {
   const navigate = useNavigate();
   const { currentUser, signOut } = useAuth();
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  
   const userName = currentUser?.displayName || currentUser?.email?.split('@')[0] || '사용자';
-  const [credits] = React.useState({ text: 3, audio: 3 });
 
   const handleLogoClick = () => {
     navigate('/');
-  };
-
-  const handleBuyCredits = () => {
-    alert('크레딧 구매 페이지로 이동합니다.');
-    // 실제 구현에서는 결제 페이지로 이동
   };
 
   const handleLogout = async () => {
@@ -30,23 +26,68 @@ const Header: React.FC = () => {
     }
   };
 
-  const handleFacebookGroupClick = () => {
-    window.open('https://facebook.com/groups/soapnoteai', '_blank');
-  };
-
   return (
-    <header className="header">
-      <div className="logo-container" onClick={handleLogoClick} style={{ cursor: 'pointer' }}>
-        <h1>SOAPNoteAI.com</h1>
-      </div>
-      <div className="user-info">
-        <span>Hello, {userName}</span>
-        <span>Credits Remaining - Text: {credits.text} Audio: {credits.audio}</span>
-        <button className="button buy-credits" onClick={handleBuyCredits}>Buy Credits</button>
-        <button className="button logout" onClick={handleLogout}>Logout</button>
-      </div>
-      <div className="facebook-banner" onClick={handleFacebookGroupClick} style={{ cursor: 'pointer' }}>
-        <p>Click here to join our private Facebook group to learn more about SOAP Note AI and get support from our community.</p>
+    <header className="modern-header">
+      <div className="header-content">
+        {/* 로고 */}
+        <div className="logo-section" onClick={handleLogoClick}>
+          <div className="logo-icon">🏥</div>
+          <span className="logo-text">SOAP AI</span>
+        </div>
+
+        {/* 네비게이션 메뉴 */}
+        <nav className="nav-menu">
+          <button 
+            className="nav-item"
+            onClick={() => navigate('/')}
+          >
+            📝 새 노트
+          </button>
+          <button 
+            className="nav-item"
+            onClick={() => navigate('/all-notes')}
+          >
+            📚 내 노트
+          </button>
+          <button 
+            className="nav-item"
+            onClick={() => navigate('/patients')}
+          >
+            👥 환자 관리
+          </button>
+        </nav>
+
+        {/* 사용자 메뉴 */}
+        <div className="user-section">
+          <div 
+            className="user-profile"
+            onClick={() => setShowUserMenu(!showUserMenu)}
+          >
+            <div className="user-avatar">
+              {userName.charAt(0).toUpperCase()}
+            </div>
+            <span className="user-name">{userName}</span>
+            <span className="dropdown-arrow">▼</span>
+          </div>
+
+          {showUserMenu && (
+            <div className="user-dropdown">
+              <div className="user-dropdown-item">
+                <span>👤 프로필</span>
+              </div>
+              <div className="user-dropdown-item">
+                <span>⚙️ 설정</span>
+              </div>
+              <div className="user-dropdown-divider"></div>
+              <div 
+                className="user-dropdown-item logout"
+                onClick={handleLogout}
+              >
+                <span>🚪 로그아웃</span>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </header>
   );
