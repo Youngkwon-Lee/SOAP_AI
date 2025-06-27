@@ -53,7 +53,8 @@ jobs:
           npm ci
           CI=false npm run build
           sudo systemctl reload nginx
-          
+        command_timeout: 10m
+
     - name: 🔍 Health Check
       run: |
         sleep 30
