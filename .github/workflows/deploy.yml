@@ -28,7 +28,7 @@ jobs:
     #   run: npm test -- --coverage --watchAll=false --passWithNoTests
       
     - name: 🏗️ Build application
-      run: npm run build
+      run: CI=false npm run build
       
     - name: 📊 Upload coverage reports
       uses: codecov/codecov-action@v3
@@ -61,7 +61,7 @@ jobs:
           cd /home/ubuntu/soap-ai
           git pull origin master
           npm ci
-          npm run build
+          CI=false npm run build
           sudo systemctl reload nginx
           
     - name: 🔍 Health Check
