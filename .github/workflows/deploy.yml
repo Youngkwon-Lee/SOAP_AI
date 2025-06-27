@@ -1,4 +1,4 @@
-name: 🚀 Deploy SOAP AI to EC2
+name: 🚀 Deploy SOAP AI to Firebase
 
 on:
   push:
