@@ -48,6 +48,13 @@ jobs:
         username: ${{ secrets.EC2_USERNAME }}
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
+          # DNS 설정 확인 및 수정
+          echo "nameserver 8.8.8.8" | sudo tee -a /etc/resolv.conf
+          echo "nameserver 8.8.4.4" | sudo tee -a /etc/resolv.conf
+          
+          # GitHub 연결 테스트
+          ping -c 2 github.com || echo "GitHub ping failed"
+          
           cd /home/ubuntu/soap-ai
           git pull origin master
           npm ci
