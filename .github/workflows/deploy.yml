@@ -34,36 +34,30 @@ jobs:
   deploy:
     needs: test
     runs-on: ubuntu-latest
-    name: 🚀 Deploy to EC2
+    name: 🚀 Deploy to Firebase
     if: github.ref == 'refs/heads/master' && github.event_name == 'push'
     
     steps:
     - name: 📥 Checkout code
       uses: actions/checkout@v4
       
-    - name: 🚀 Deploy to EC2
-      uses: appleboy/ssh-action@v1.0.0
+    - name: 📦 Setup Node.js
+      uses: actions/setup-node@v4
       with:
-        host: ${{ secrets.EC2_HOST }}
-        username: ${{ secrets.EC2_USERNAME }}
-        key: ${{ secrets.EC2_SSH_KEY }}
-        script: |
-          # DNS 설정 확인 및 수정
-          echo "nameserver 8.8.8.8" | sudo tee -a /etc/resolv.conf
-          echo "nameserver 8.8.4.4" | sudo tee -a /etc/resolv.conf
-          
-          # GitHub 연결 테스트
-          ping -c 2 github.com || echo "GitHub ping failed"
-          
-          cd /home/ubuntu/soap-ai
-          git pull origin master
-          npm ci
-          CI=false npm run build
-          sudo systemctl reload nginx
-        command_timeout: 10m
-
-    - name: 🔍 Health Check
-      run: |
-        sleep 30
-        curl -f https://soapai.shop || exit 1
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: 📦 Install dependencies
+      run: npm ci
+      
+    - name: 🏗️ Build application
+      run: CI=false npm run build
+      
+    - name: 🚀 Deploy to Firebase
+      uses: FirebaseExtended/action-hosting-deploy@v0
+      with:
+        repoToken: ${{ secrets.GITHUB_TOKEN }}
+        firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_SOAP_AI }}
+        channelId: live
+        projectId: soap-ai
         
