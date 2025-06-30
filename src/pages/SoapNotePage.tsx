@@ -107,30 +107,7 @@ const SoapNotePage: React.FC = () => {
     setShorthandNotes(e.target.value);
   };
 
-  const handleStartRecording = async () => {
-    try {
-      setError(null);
-      await startRecording();
-      setIsRecording(true);
-    } catch (err) {
-      setError('녹음을 시작할 수 없습니다. 마이크 권한을 확인해주세요.');
-      console.error('Recording error:', err);
-    }
-  };
-
-  const handleStopRecording = async () => {
-    try {
-      const blob = await stopRecording();
-      setAudioBlob(blob);
-      setIsRecording(false);
-      
-      // 자동으로 STT 시작
-      await handleTranscribe(blob);
-    } catch (err) {
-      setError('녹음을 중지하는 중 오류가 발생했습니다.');
-      console.error('Stop recording error:', err);
-    }
-  };
+  
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
