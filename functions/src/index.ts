@@ -71,4 +71,39 @@ export const transcribeAudioSecure = functions.https.onCall(async (data, context
 
   const { transcribeAudioSecure } = await import('./audioTranscription');
   return await transcribeAudioSecure(data, context);
+});
+
+// 사용자가 SOAP 노트를 저장하는 함수
+export const saveSoapNote = functions.https.onCall(async (data, context) => {
+  // 사용자 인증 확인
+  if (!context.auth) {
+    throw new functions.https.HttpsError(
+      'unauthenticated',
+      '이 기능을 사용하려면 로그인이 필요합니다.'
+    );
+  }
+
+  const userId = context.auth.uid;
+  const db = admin.firestore();
+
+  // 저장할 SOAP 노트 데이터
+  const soapNoteData = data.soapNote;
+  if (!soapNoteData) {
+    throw new functions.https.HttpsError('invalid-argument', '저장할 SOAP 노트 데이터가 없습니다.');
+  }
+
+  try {
+    // Firestore에 SOAP 노트 저장
+    const docRef = await db.collection(`users/${userId}/soapNotes`).add({
+      ...soapNoteData,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    console.log(`SOAP Note saved for user ${userId} with ID: ${docRef.id}`);
+    return { success: true, noteId: docRef.id };
+  } catch (error) {
+    console.error('Error saving SOAP note:', error);
+    throw new functions.https.HttpsError('internal', 'SOAP 노트 저장 중 오류가 발생했습니다.');
+  }
 }); 
