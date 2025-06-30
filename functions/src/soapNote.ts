@@ -133,8 +133,42 @@ async function generateSoapNoteInternal(params: GenerateSoapNoteParams): Promise
   const { noteType, patientInfo, shorthandNotes, template } = params;
 
   // 프롬프트 생성
+  const getRolePrompt = (noteType: string) => {
+    let role = '의료 기록 전문가';
+    if (noteType === '물리치료') role = '숙련된 물리치료사';
+    else if (noteType === '작업치료') role = '숙련된 작업치료사';
+    else if (noteType === '언어치료') role = '숙련된 언어치료사';
+    else if (noteType === '내과') role = '숙련된 내과 전문의';
+    else if (noteType === '외과') role = '숙련된 외과 전문의';
+    else if (noteType === '정형외과') role = '숙련된 정형외과 전문의';
+    else if (noteType === '신경과') role = '숙련된 신경과 전문의';
+    else if (noteType === '재활의학과') role = '숙련된 재활의학과 전문의';
+    else if (noteType === '신경외과') role = '숙련된 신경외과 전문의';
+    else if (noteType === '마취통증의학과') role = '숙련된 마취통증의학과 전문의';
+    else if (noteType === '가정의학과') role = '숙련된 가정의학과 전문의';
+    else if (noteType === '응급의학과') role = '숙련된 응급의학과 전문의';
+    else if (noteType === '소아과') role = '숙련된 소아과 전문의';
+    else if (noteType === '산부인과') role = '숙련된 산부인과 전문의';
+    else if (noteType === '정신건강의학과') role = '숙련된 정신건강의학과 전문의';
+    else if (noteType === '간호') role = '숙련된 간호사';
+    else if (noteType === '운동') role = '숙련된 운동 전문가';
+    else if (noteType === '스포츠') role = '숙련된 스포츠 의학 전문가';
+    return `당신은 ${role}입니다.`;
+  };
+
+  const getLanguageInstruction = (language?: string) => {
+    if (language === 'en') {
+      return '모든 내용은 영어로 작성해주세요.';
+    } else if (language === 'medical') {
+      return '모든 내용은 영어 의학 용어와 약어를 사용하여 간결하게 작성해주세요. (예: c/o, Pt, Dx, Tx, F/U, ROM, WNL 등)';
+    } else {
+      return '모든 내용은 한국어로 작성해주세요. 의학 용어는 가능한 한글로 작성해주세요.';
+    }
+  };
+
   const prompt = template 
-    ? `다음은 SOAP 노트 템플릿과 환자와의 대화 내용입니다. 템플릿의 형식을 참고하여 SOAP 노트를 작성해주세요.
+    ? `${getRolePrompt(noteType)}
+다음은 SOAP 노트 템플릿과 환자와의 대화 내용입니다. 템플릿의 형식과 구조를 최대한 참고하여 SOAP 노트를 작성해주세요.
 
 템플릿:
 ${template}
@@ -149,12 +183,15 @@ ${shorthandNotes}
 - 성별: ${patientInfo.gender}
 - 방문 날짜: ${patientInfo.visitDate}
 
+${getLanguageInstruction(params.language)}
+
 주의사항:
-- 제공된 템플릿의 형식과 구조를 최대한 따라주세요
 - 대화에서 언급되지 않은 내용은 포함하지 마세요
 - 추측이나 가정을 하지 마세요
-- 의학 용어는 가능한 한글로 작성해주세요`
-    : `다음은 환자와의 대화 내용입니다. 이 대화를 바탕으로 SOAP 노트를 작성해주세요.
+- 환자 개인 식별 정보(이름, 주민번호 등)는 절대 포함하지 마세요.
+- 각 섹션(Subjective, Objective, Assessment, Plan)을 명확히 구분하여 작성해주세요.`
+    : `${getRolePrompt(noteType)}
+다음은 환자와의 대화 내용입니다. 이 대화를 바탕으로 SOAP 노트를 작성해주세요.
 
 대화 내용:
 ${shorthandNotes}
@@ -166,22 +203,54 @@ ${shorthandNotes}
 - 성별: ${patientInfo.gender}
 - 방문 날짜: ${patientInfo.visitDate}
 
+${getLanguageInstruction(params.language)}
+
 다음 형식으로 SOAP 노트를 작성해주세요:
-1. Subjective: 환자가 직접 말한 증상과 불편사항만 포함
-2. Objective: 실제 대화에서 언급된 객관적인 검사 결과나 관찰 사항만 포함
-3. Assessment: 대화 내용에서 파악할 수 있는 문제점이나 진단만 포함
-4. Plan: 대화에서 실제로 논의된 치료 계획이나 권장사항만 포함
+1. Subjective: 환자가 직접 말한 증상, 불편사항, 병력, 사회력 등 주관적인 정보만 포함
+2. Objective: 신체 검진 소견, 검사 결과, 바이탈 사인 등 객관적인 관찰 및 측정 가능한 정보만 포함
+3. Assessment: 주관적/객관적 정보를 바탕으로 한 문제점 분석, 진단, 감별 진단 등 평가 내용만 포함
+4. Plan: 진단에 따른 치료 계획, 처방, 교육, 추후 관리 등 계획 내용만 포함
 
 주의사항:
 - 대화에서 언급되지 않은 내용은 포함하지 마세요
 - 추측이나 가정을 하지 마세요
-- 의학 용어는 가능한 한글로 작성해주세요`;
+- 환자 개인 식별 정보(이름, 주민번호 등)는 절대 포함하지 마세요.
+- 각 섹션(Subjective, Objective, Assessment, Plan)을 명확히 구분하여 작성해주세요.`
 
   try {
     // OpenAI API 호출
     const completion = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
       messages: [
+        {
+          role: 'system',
+          content: `당신은 숙련된 의료 기록 전문가입니다. 다음은 몇 가지 SOAP 노트 작성 예시입니다. 이 예시들을 참고하여 환자의 대화 내용을 바탕으로 정확하고 간결한 SOAP 노트를 작성해주세요.
+
+--- 예시 1 (내과) ---
+환자 대화 내용:
+환자: 어제부터 열이 나고 목이 아파요. 기침도 좀 나고 몸살 기운이 있어요.
+의사: 체온은 38.5도이고, 목 안이 좀 부어있네요. 인후통과 기침이 주 증상이고, 독감 검사는 음성입니다.
+
+SOAP 노트:
+Subjective: Pt c/o fever (onset yesterday), sore throat, cough, body aches.
+Objective: T 38.5°C. Pharyngeal erythema. Cough present. Flu test negative.
+Assessment: Acute pharyngitis. Viral infection suspected.
+Plan: Symptomatic treatment. Rest, hydration. OTC pain relievers. F/U PRN.
+
+--- 예시 2 (물리치료) ---
+환자 대화 내용:
+환자: 지난주에 운동하다가 오른쪽 어깨를 삐끗했어요. 팔을 올릴 때 아프고, 밤에 잠을 잘 못 자요.
+치료사: 우측 어깨 외전 시 90도에서 통증이 있고, 능동 관절 가동 범위(AROM)가 제한됩니다. 극상근 부위 압통이 있습니다.
+
+SOAP 노트:
+Subjective: Pt reports R shoulder sprain 1 wk ago during exercise. Pain with arm elevation, disturbed sleep.
+Objective: R shoulder AROM limited to 90° abduction with pain. Supraspinatus tenderness to palpation.
+Assessment: R shoulder impingement syndrome. Functional limitation due to pain.
+Plan: PT 3x/wk for 4 wks. Modalities for pain. ROM/strengthening exercises. Patient education on activity modification. F/U in 2 wks.
+
+--- 예시 끝 ---
+`
+        },
         {
           role: 'user',
           content: prompt
