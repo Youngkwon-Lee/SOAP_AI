@@ -180,7 +180,7 @@ export const generateSoapNote = async (params: GenerateSoapNoteParams): Promise<
 /**
  * 음성 전사 (보안 버전 - Firebase Functions 사용)
  */
-export const transcribeAudio = async (audioBlob: Blob): Promise<string> => {
+export const transcribeAudio = async (audioData: Blob | File): Promise<string> => {
   try {
     console.log('음성 전사 시작 (Firebase Functions):', {
       audioSize: audioBlob.size,
