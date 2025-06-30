@@ -7,7 +7,7 @@ import { getAnalytics } from "firebase/analytics";
 import { getFunctions, connectFunctionsEmulator } from "firebase/functions";
 
 const firebaseConfig = {
-  apiKey: process.env.REACT_APP_FIREBASE_API_KEY || "demo-api-key",
+  apiKey: "AIzaSyAXZKivR30wveUw7YI-hy2SebNAqB5LBTU",
   authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN || "demo-project.firebaseapp.com",
   projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID || "demo-project",
   storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET || "demo-project.appspot.com",

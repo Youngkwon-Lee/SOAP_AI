@@ -20,6 +20,8 @@ export interface Template {
   specialty: string;
   format: string;
   example: string;
+  fewShotInput?: string; // Few-shot 예시 입력
+  fewShotOutput?: string; // Few-shot 예시 출력
   userId?: string;
   isSystemTemplate?: boolean;
   createdAt: string;
