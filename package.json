@@ -13,6 +13,7 @@
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.1",
     "firebase": "^11.6.0",
+    "firebase-tools": "^14.9.0",
     "openai": "^4.92.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",

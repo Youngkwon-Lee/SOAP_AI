@@ -1,11 +1,17 @@
 import { Template, TemplateFormData } from '../types';
 import fewShotExamples from '../data/fewShotExamples.json';
 
-interface FewShotExamples {
-  [key: string]: string;
+// fewShotExamples.json 파일의 각 항목에 대한 인터페이스 정의
+interface FewShotExampleItem {
+  specialty: string;
+  input: string;
+  output_ko: string;
+  output_en: string;
+  output_medical: string;
 }
 
-const typedFewShotExamples: FewShotExamples = fewShotExamples;
+// fewShotExamples의 타입을 FewShotExampleItem[]으로 단언
+const typedFewShotExamples: FewShotExampleItem[] = fewShotExamples as FewShotExampleItem[];
 
 // 전문과별 기본 템플릿 정의
 export const DEFAULT_TEMPLATES: TemplateFormData[] = [
@@ -226,15 +232,19 @@ export const DEFAULT_TEMPLATES: TemplateFormData[] = [
 ];
 
 // 전문과별 템플릿 검색 함수
-export const getTemplateBySpecialty = (specialty: string): Template | null => { // 반환 타입을 Template로 변경
+export const getTemplateBySpecialty = (specialty: string): Template | null => {
   const template = DEFAULT_TEMPLATES.find(t => t.specialty === specialty);
   if (template) {
+    // 해당 전문과의 few-shot 예시 중 첫 번째 것을 찾습니다.
+    const fewShotExample = typedFewShotExamples.find(ex => ex.specialty === specialty);
+    
     return {
-      id: 'default-' + specialty, // 기본 템플릿에 고유 ID 부여
-      createdAt: new Date().toISOString(), // 현재 시간으로 설정
-      updatedAt: new Date().toISOString(), // 현재 시간으로 설정
+      id: 'default-' + specialty,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
       ...template,
-      example: typedFewShotExamples[specialty] || '' // fewShotExamples에서 예시 가져오기
+      // 찾은 예시의 output_ko를 example로 사용합니다. 없으면 빈 문자열.
+      example: fewShotExample ? fewShotExample.output_ko : ''
     };
   }
   return null;

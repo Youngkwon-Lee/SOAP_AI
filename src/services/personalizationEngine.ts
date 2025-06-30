@@ -43,8 +43,6 @@ export interface LearningData {
   timestamp: string;
 }
 
-const PATTERNS_COLLECTION = 'personalizationPatterns';
-const LEARNING_DATA_COLLECTION = 'learningData';
 const MAX_PATTERNS_PER_CATEGORY = 10; // 카테고리당 최대 패턴 수
 
 /**
@@ -56,7 +54,7 @@ export const analyzeAndStorePattern = async (soapNote: SoapNote, specialty: stri
     if (!currentUser) throw new Error('로그인이 필요합니다.');
 
     // 1. 학습 데이터 저장
-    await storeLearningData({
+    await storeLearningData(currentUser.uid, {
       soapNote,
       specialty,
       timestamp: new Date().toISOString()
@@ -293,7 +291,7 @@ const updateOrCreatePattern = async (userId: string, patternData: Partial<Person
   try {
     // 기존 패턴 검색
     const q = query(
-      collection(db, PATTERNS_COLLECTION),
+      collection(db, 'users', userId, 'personalizationPatterns'),
       where('userId', '==', userId),
       where('category', '==', patternData.category),
       where('pattern', '==', patternData.pattern)
@@ -327,7 +325,7 @@ const updateOrCreatePattern = async (userId: string, patternData: Partial<Person
         updatedAt: new Date().toISOString()
       };
       
-      await addDoc(collection(db, PATTERNS_COLLECTION), newPattern);
+      await addDoc(collection(db, 'users', userId, 'personalizationPatterns'), newPattern);
       
       // 카테고리당 패턴 수 제한
       await limitPatternsPerCategory(userId, patternData.category!);
@@ -343,7 +341,7 @@ const updateOrCreatePattern = async (userId: string, patternData: Partial<Person
  */
 const limitPatternsPerCategory = async (userId: string, category: string): Promise<void> => {
   const q = query(
-    collection(db, PATTERNS_COLLECTION),
+    collection(db, 'users', userId, 'personalizationPatterns'),
     where('userId', '==', userId),
     where('category', '==', category),
     orderBy('weight', 'desc'),
@@ -364,11 +362,11 @@ const limitPatternsPerCategory = async (userId: string, category: string): Promi
 /**
  * 학습 데이터 저장
  */
-const storeLearningData = async (data: LearningData): Promise<void> => {
+const storeLearningData = async (userId: string, data: LearningData): Promise<void> => {
   const currentUser = auth.currentUser;
   if (!currentUser) throw new Error('로그인이 필요합니다.');
   
-  await addDoc(collection(db, LEARNING_DATA_COLLECTION), {
+  await addDoc(collection(db, 'users', userId, 'learningData'), {
     ...data,
     userId: currentUser.uid,
     createdAt: new Date().toISOString()
@@ -384,14 +382,14 @@ export const getUserPatterns = async (category?: string): Promise<Personalizatio
     if (!currentUser) throw new Error('로그인이 필요합니다.');
     
     let q = query(
-      collection(db, PATTERNS_COLLECTION),
+      collection(db, 'users', currentUser.uid, 'personalizationPatterns'),
       where('userId', '==', currentUser.uid),
       orderBy('weight', 'desc')
     );
     
     if (category) {
       q = query(
-        collection(db, PATTERNS_COLLECTION),
+        collection(db, 'users', currentUser.uid, 'personalizationPatterns'),
         where('userId', '==', currentUser.uid),
         where('category', '==', category),
         orderBy('weight', 'desc')
@@ -587,4 +585,4 @@ export default {
   getUserPatterns,
   generatePersonalizedTemplate,
   getPersonalizationStatus
-}; 
+};

@@ -19,10 +19,11 @@ export const saveNote = async (note: SoapNote, noteType: NoteType): Promise<stri
       type: noteType,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      note
+      note,
+      userId // userId 필드 추가
     };
     
-    const docRef = await addDoc(collection(db, 'notes'), userNote);
+    const docRef = await addDoc(collection(db, 'users', userId, 'soapNotes'), userNote);
     return docRef.id;
   } catch (error) {
     console.error('Error saving note:', error);
@@ -36,8 +37,7 @@ export const getAllNotes = async (): Promise<UserNote[]> => {
     const userId = getCurrentUserId();
     
     const q = query(
-      collection(db, 'notes'),
-      where('userId', '==', userId),
+      collection(db, 'users', userId, 'soapNotes'),
       orderBy('createdAt', 'desc')
     );
     
@@ -67,16 +67,11 @@ export const getAllNotes = async (): Promise<UserNote[]> => {
 export const getNoteById = async (noteId: string): Promise<UserNote | null> => {
   try {
     const userId = getCurrentUserId();
-    const docRef = doc(db, 'notes', noteId);
+    const docRef = doc(db, 'users', userId, 'soapNotes', noteId);
     const docSnap = await getDoc(docRef);
     
     if (docSnap.exists()) {
       const data = docSnap.data();
-      
-      // 해당 노트가 현재 사용자의 것인지 확인
-      if (data.userId !== userId) {
-        throw new Error('이 노트에 접근할 권한이 없습니다.');
-      }
       
       return {
         id: docSnap.id,
@@ -101,8 +96,7 @@ export const getNotesByType = async (noteType: NoteType): Promise<UserNote[]> =>
     const userId = getCurrentUserId();
     
     const q = query(
-      collection(db, 'notes'),
-      where('userId', '==', userId),
+      collection(db, 'users', userId, 'soapNotes'),
       where('type', '==', noteType),
       orderBy('createdAt', 'desc')
     );
@@ -133,16 +127,11 @@ export const getNotesByType = async (noteType: NoteType): Promise<UserNote[]> =>
 export const updateNote = async (noteId: string, updatedNote: Partial<SoapNote>): Promise<void> => {
   try {
     const userId = getCurrentUserId();
-    const docRef = doc(db, 'notes', noteId);
+    const docRef = doc(db, 'users', userId, 'soapNotes', noteId);
     const docSnap = await getDoc(docRef);
     
     if (docSnap.exists()) {
       const data = docSnap.data();
-      
-      // 해당 노트가 현재 사용자의 것인지 확인
-      if (data.userId !== userId) {
-        throw new Error('이 노트를 수정할 권한이 없습니다.');
-      }
       
       const updatedData = {
         ...data,
@@ -167,16 +156,11 @@ export const updateNote = async (noteId: string, updatedNote: Partial<SoapNote>)
 export const deleteNote = async (noteId: string): Promise<void> => {
   try {
     const userId = getCurrentUserId();
-    const docRef = doc(db, 'notes', noteId);
+    const docRef = doc(db, 'users', userId, 'soapNotes', noteId);
     const docSnap = await getDoc(docRef);
     
     if (docSnap.exists()) {
       const data = docSnap.data();
-      
-      // 해당 노트가 현재 사용자의 것인지 확인
-      if (data.userId !== userId) {
-        throw new Error('이 노트를 삭제할 권한이 없습니다.');
-      }
       
       await deleteDoc(docRef);
     } else {
@@ -220,4 +204,4 @@ const noteService = {
   exportNoteToJSON
 };
 
-export default noteService; 
+export default noteService;

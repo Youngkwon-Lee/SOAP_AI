@@ -1,0 +1,29 @@
+{"users": [
+{
+  "localId": "1SMjtGkqP3Ojcp55TKrWgIMu0Am2",
+  "email": "kwon3856@gmail.com",
+  "emailVerified": true,
+  "displayName": "이영권",
+  "photoUrl": "https://lh3.googleusercontent.com/a/ACg8ocKYF-Z6Wt1L1pPUTNAxs3ILBxvRH4D6rm4qtyBhnhhmYm6GL3DyOA=s96-c",
+  "lastSignedInAt": "1751278813419",
+  "createdAt": "1744119537979",
+  "providerUserInfo": [
+    {
+      "providerId": "google.com",
+      "rawId": "114252961915696504947",
+      "email": "kwon3856@gmail.com",
+      "displayName": "이영권",
+      "photoUrl": "https://lh3.googleusercontent.com/a/ACg8ocKYF-Z6Wt1L1pPUTNAxs3ILBxvRH4D6rm4qtyBhnhhmYm6GL3DyOA=s96-c"
+    }
+  ]
+},
+{
+  "localId": "25vG3FHHnaWXmumytpkfpUSLkrC2",
+  "email": "kwon3856@naver.com",
+  "emailVerified": false,
+  "passwordHash": "AK0p7INFBwpezxaA15ew3wQyaCj4gnyGKpPhcf7Y+js6DX12SiyWo0CwItKevKfVZEPONcbY4n/Yqc+o4KYjYA==",
+  "salt": "/cG1G/RVORDBdw==",
+  "lastSignedInAt": "1744254927709",
+  "createdAt": "1744254927709",
+  "providerUserInfo": []
+}]}

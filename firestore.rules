@@ -3,24 +3,23 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     // 사용자는 자신의 노트만 읽고 쓸 수 있음
-    match /notes/{noteId} {
+    match /users/{userId}/soapNotes/{noteId} {
       allow read, write: if request.auth != null 
-        && (resource == null || resource.data.userId == request.auth.uid)
-        && request.auth.uid == resource.data.userId;
+        && request.auth.uid == userId;
       allow create: if request.auth != null 
-        && request.auth.uid == request.resource.data.userId;
+        && request.auth.uid == userId;
     }
     
-    // 환자 정보는 해당 사용자만 접근 가능
+    // 환자 정보는 해당 사용자만 접근 가능 (기존 유지)
     match /patients/{patientId} {
       allow read, write: if request.auth != null 
         && (resource == null || resource.data.userId == request.auth.uid)
-        && request.auth.uid == resource.data.userId;
+        && request.auth.uid == request.resource.data.userId;
       allow create: if request.auth != null 
         && request.auth.uid == request.resource.data.userId;
     }
     
-    // 템플릿 접근 규칙 - 시스템 템플릿은 모든 인증된 사용자가 읽기 가능
+    // 템플릿 접근 규칙 - 시스템 템플릿은 모든 인증된 사용자가 읽기 가능 (기존 유지)
     match /templates/{templateId} {
       // 모든 템플릿 읽기 (인증된 사용자)
       allow read: if request.auth != null;
@@ -34,48 +33,46 @@ service cloud.firestore {
         && request.resource.data.userId == 'system';
     }
     
-    // 사용자 프로필 정보
+    // 사용자 프로필 정보 (기존 유지)
     match /users/{userId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
       allow create: if request.auth != null && request.auth.uid == userId;
     }
     
-    // 트랜잭션 정보 (결제 등)
+    // 트랜잭션 정보 (결제 등) (기존 유지)
     match /transactions/{transactionId} {
       allow read, write: if request.auth != null 
         && (resource == null || resource.data.userId == request.auth.uid)
-        && request.auth.uid == resource.data.userId;
+        && request.auth.uid == request.resource.data.userId;
       allow create: if request.auth != null 
         && request.auth.uid == request.resource.data.userId;
     }
     
     // 개인화 패턴 - 사용자별 접근
-    match /personalizationPatterns/{patternId} {
+    match /users/{userId}/personalizationPatterns/{patternId} {
       allow read, write: if request.auth != null 
-        && (resource == null || resource.data.userId == request.auth.uid)
-        && request.auth.uid == request.resource.data.userId;
+        && request.auth.uid == userId;
       allow create: if request.auth != null 
-        && request.auth.uid == request.resource.data.userId;
+        && request.auth.uid == userId;
     }
     
     // 학습 데이터 - 사용자별 접근
-    match /learningData/{dataId} {
+    match /users/{userId}/learningData/{dataId} {
       allow read, write: if request.auth != null 
-        && (resource == null || resource.data.userId == request.auth.uid)
-        && request.auth.uid == request.resource.data.userId;
+        && request.auth.uid == userId;
       allow create: if request.auth != null 
-        && request.auth.uid == request.resource.data.userId;
+        && request.auth.uid == userId;
     }
     
-    // 시스템 설정은 읽기만 가능 (관리자가 별도 관리)
+    // 시스템 설정은 읽기만 가능 (관리자가 별도 관리) (기존 유지)
     match /system/{document} {
       allow read: if request.auth != null;
       allow write: if false; // 클라이언트에서는 쓰기 불가
     }
     
-    // 기본적으로 모든 다른 경로는 차단
+    // 기본적으로 모든 다른 경로는 차단 (기존 유지)
     match /{document=**} {
       allow read, write: if false;
     }
   }
-} 
+}
