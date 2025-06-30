@@ -568,12 +568,7 @@ const UnifiedSoapNotePage: React.FC = () => {
           if (newSpecialty) {
             const defaultTemplate = getTemplateBySpecialty(newSpecialty);
             if (defaultTemplate) {
-              setSelectedTemplate({
-                id: 'default',
-                ...defaultTemplate,
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString()
-              });
+              setSelectedTemplate(defaultTemplate);
             }
           } else {
             setSelectedTemplate(null);

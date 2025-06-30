@@ -45,7 +45,6 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({
     profession,
     specialty,
     format: '',
-    example: ''
   });
 
   const resetFormData = useCallback(() => {
@@ -54,7 +53,6 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({
       profession,
       specialty,
       format: '',
-      example: ''
     });
   }, [profession, specialty]);
 
@@ -70,13 +68,6 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({
       setError({
         message: 'SOAP 노트 형식을 입력해주세요.',
         code: 'INVALID_FORMAT'
-      });
-      return false;
-    }
-    if (!formData.example.trim()) {
-      setError({
-        message: '예시 SOAP 노트를 입력해주세요.',
-        code: 'INVALID_EXAMPLE'
       });
       return false;
     }
@@ -258,17 +249,6 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({
             </div>
           </div>
 
-          <div className="form-group">
-            <label htmlFor="example">예시 SOAP 노트</label>
-            <textarea
-              id="example"
-              value={formData.example}
-              onChange={e => setFormData(prev => ({ ...prev, example: e.target.value }))}
-              placeholder="예시 SOAP 노트를 입력하세요..."
-              required
-            />
-          </div>
-
           <div className="form-actions">
             <button type="submit" disabled={loading.creation}>
               {loading.creation ? '저장 중...' : '템플릿 저장'}
@@ -301,4 +281,4 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({
   );
 };
 
-export default TemplateManager; 
+export default TemplateManager;

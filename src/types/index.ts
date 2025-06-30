@@ -33,7 +33,6 @@ export interface TemplateFormData {
   profession: string;
   specialty: string;
   format: string;
-  example: string;
 }
 
 export type NoteType = 

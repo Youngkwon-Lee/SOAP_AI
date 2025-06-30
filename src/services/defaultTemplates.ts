@@ -1,5 +1,11 @@
-import { TemplateFormData } from '../types';
+import { Template, TemplateFormData } from '../types';
 import fewShotExamples from '../data/fewShotExamples.json';
+
+interface FewShotExamples {
+  [key: string]: string;
+}
+
+const typedFewShotExamples: FewShotExamples = fewShotExamples;
 
 // 전문과별 기본 템플릿 정의
 export const DEFAULT_TEMPLATES: TemplateFormData[] = [
@@ -220,12 +226,15 @@ export const DEFAULT_TEMPLATES: TemplateFormData[] = [
 ];
 
 // 전문과별 템플릿 검색 함수
-export const getTemplateBySpecialty = (specialty: string): TemplateFormData | null => {
-  const template = DEFAULT_TEMPLATES.find(template => template.specialty === specialty);
+export const getTemplateBySpecialty = (specialty: string): Template | null => { // 반환 타입을 Template로 변경
+  const template = DEFAULT_TEMPLATES.find(t => t.specialty === specialty);
   if (template) {
     return {
+      id: 'default-' + specialty, // 기본 템플릿에 고유 ID 부여
+      createdAt: new Date().toISOString(), // 현재 시간으로 설정
+      updatedAt: new Date().toISOString(), // 현재 시간으로 설정
       ...template,
-      example: fewShotExamples[specialty] || '' // fewShotExamples에서 예시 가져오기
+      example: typedFewShotExamples[specialty] || '' // fewShotExamples에서 예시 가져오기
     };
   }
   return null;

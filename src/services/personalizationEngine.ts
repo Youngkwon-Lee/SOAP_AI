@@ -436,12 +436,18 @@ export const generatePersonalizedTemplate = async (specialty: string): Promise<T
     // 패턴을 적용하여 개인화된 템플릿 생성
     const personalizedFormat = applyPatternsToTemplate(systemTemplate.format, patterns);
     
-    const personalizedTemplate: TemplateFormData = {
+    const now = new Date().toISOString();
+    const personalizedTemplate: Template = { // Template 타입으로 변경
+      id: 'personalized-' + Date.now(), // 임시 ID
       name: `${specialty} 개인 맞춤 템플릿`,
       profession: 'doctor',
       specialty,
       format: personalizedFormat,
-      example: generatePersonalizedExample(systemTemplate.example, patterns)
+      example: generatePersonalizedExample(systemTemplate.example, patterns),
+      userId: currentUser.uid, // 현재 사용자 ID
+      isSystemTemplate: false, // 시스템 템플릿 아님
+      createdAt: now,
+      updatedAt: now
     };
     
     // 개인 템플릿 저장

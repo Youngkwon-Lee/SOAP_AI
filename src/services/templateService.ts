@@ -29,8 +29,9 @@ export const createTemplate = async (data: TemplateFormData, isSystem: boolean =
       throw new Error('로그인이 필요합니다.');
     }
     
-    const templateData = {
+    const templateData: Omit<Template, 'id'> = { // id를 제외한 Template 타입
       ...data,
+      example: '', // example 필드를 빈 문자열로 초기화
       userId: isSystem ? 'system' : currentUser?.uid,
       isSystemTemplate: isSystem,
       createdAt: now,
@@ -41,7 +42,7 @@ export const createTemplate = async (data: TemplateFormData, isSystem: boolean =
     return {
       id: docRef.id,
       ...templateData
-    };
+    } as Template;
   } catch (error) {
     console.error('템플릿 생성 중 오류:', error);
     throw error;
