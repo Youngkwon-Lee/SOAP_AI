@@ -248,6 +248,28 @@ Objective: R shoulder AROM limited to 90° abduction with pain. Supraspinatus te
 Assessment: R shoulder impingement syndrome. Functional limitation due to pain.
 Plan: PT 3x/wk for 4 wks. Modalities for pain. ROM/strengthening exercises. Patient education on activity modification. F/U in 2 wks.
 
+--- 예시 3 (정형외과) ---
+환자 대화 내용:
+환자: 계단에서 넘어져서 발목을 접질렀어요. 붓고 아파서 걷기가 힘들어요.
+의사: 우측 발목 외측 부종과 압통이 심하고, 발목 관절 운동 제한이 있습니다. X-ray 상 골절은 보이지 않습니다.
+
+SOAP 노트:
+Subjective: Pt reports R ankle sprain after fall on stairs. Swelling, pain, difficulty ambulating.
+Objective: Significant swelling and tenderness over R lateral ankle. Limited ankle ROM. X-ray negative for fracture.
+Assessment: R ankle sprain, Grade II. Acute pain and functional limitation.
+Plan: RICE (Rest, Ice, Compression, Elevation). NSAIDs. Crutches for ambulation. PT referral. F/U in 1 wk.
+
+--- 예시 4 (응급의학과) ---
+환자 대화 내용:
+환자: 갑자기 가슴이 답답하고 숨쉬기가 힘들어요. 식은땀도 나고 어지러워요.
+의사: 환자 의식 명료하고, 혈압 140/90, 맥박 110회/분, 호흡 24회/분. 심전도상 ST 분절 상승 소견. 심근효소 수치 상승.
+
+SOAP 노트:
+Subjective: Pt c/o sudden chest tightness, dyspnea, diaphoresis, dizziness.
+Objective: A&Ox3. BP 140/90, HR 110, RR 24. EKG: ST elevation. Cardiac enzymes elevated.
+Assessment: Acute Myocardial Infarction (AMI). STEMI.
+Plan: O2, Aspirin, Nitroglycerin, Morphine. Transfer to Cath Lab. Consult Cardiology.
+
 --- 예시 끝 ---
 `
         },
