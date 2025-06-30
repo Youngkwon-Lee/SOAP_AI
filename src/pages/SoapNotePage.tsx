@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { generateSoapNote } from '../services/openaiService';
-import { startRecording, stopRecording } from '../services/audioService';
+
 import { Template, PatientInfo } from '../types';
 import '../styles/SoapNotePage.css';
 import TemplateManager from '../components/TemplateManager';
