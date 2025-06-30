@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { uploadAudio, transcribeAudio } from '../services/audioService';
-import { generateSoapNote } from '../services/openaiService';
+import { transcribeAudio, generateSoapNote } from '../services/openaiService';
 import { PatientInfo, SoapNote } from '../types/note';
 import LoadingSpinner from '../components/LoadingSpinner';
 import '../styles/AudioSoapNote.css';

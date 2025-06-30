@@ -114,237 +114,65 @@ interface SoapNote {
 }
 
 /**
- * SOAP 노트 생성 (테스트 모드 - Mock 함수)
+ * SOAP 노트 생성 (보안 버전 - Firebase Functions 사용)
  */
 export const generateSoapNote = async (params: GenerateSoapNoteParams): Promise<SoapNote> => {
   try {
-    console.log('🧪 SOAP 노트 생성 시작 (테스트 모드):', {
+    console.log('SOAP 노트 생성 요청 (Firebase Functions):', {
       noteType: params.noteType,
       language: params.language,
       hasTemplate: !!params.template,
-      shorthandNotesLength: params.shorthandNotes.length
     });
 
-    // 테스트 모드: Mock 데이터 생성
-    console.log(`⚠️ 테스트 모드: ${params.language} 언어로 Mock SOAP 노트를 생성합니다`);
-    
-    // 2초 지연 (실제 AI 처리 시간 시뮬레이션)
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    // 언어별 SOAP 노트 생성
-    if (params.language === 'medical') {
-      // noteType을 영어 의학용어로 변환
-      const medicalNoteType = getMedicalNoteType(params.noteType);
-      
-      // 의학용어로 직접 변환
-      const medicalNotes = convertToMedicalFormat(params.shorthandNotes);
-      
-      // 의학용어/약어 버전
-      const medicalSoapNote: SoapNote = {
-        patientInfo: params.patientInfo,
-        subjective: `CC: ${medicalNotes}
-        
-HPI: Pt presents w/ chief complaint as described above. 
-Onset: 2 wks ago during tennis activity
-Quality: Sharp, aching pain
-Severity: 7/10 (worse w/ movement)
-Location: Rt shoulder, specifically w/ abduction >90°
-Associated sx: Nocturnal pain, difficulty sleeping on affected side
-Aggravating factors: Overhead activities, abduction, external rotation
-Alleviating factors: Rest, heat application
-PMH: HTN, DM (per chart)
-Meds: As documented
-Allergies: NKDA
-SH: Tobacco (-), ETOH (-)
-FH: Non-contributory`,
-        
-        objective: `VS: BP ${Math.floor(Math.random() * 40) + 120}/${Math.floor(Math.random() * 20) + 80}, HR ${Math.floor(Math.random() * 30) + 70}, RR 18, T 98.6°F, SpO2 98% RA
-        
-PE:
-• General: NAD, A&Ox3, no apparent distress
-• HEENT: PERRL, EOMI, no JVD
-• CV: RRR, no m/r/g
-• Pulm: CTA bilaterally
-• Abd: Soft, NT/ND, +BS in all quadrants
-• Ext: No c/c/e
-• Neuro: CN II-XII intact, strength 5/5 throughout except affected area
-• MSK: 
-  - Inspection: Postural asymmetry noted
-  - Palpation: Tenderness to palpation, muscle guarding
-  - ROM: Limited AROM/PROM (70-80% of normal)
-  - Strength: MMT 4/5 in affected area
-  - Special tests: Positive findings consistent with ${medicalNoteType} dysfunction`,
-        
-        assessment: `A&P:
-1. ${medicalNoteType} dysfunction
-   - Primary Dx: Acute/chronic pain syndrome
-   - Secondary: Functional impairment
-   - Tertiary: ROM restriction, strength deficit
-   
-DDx: r/o structural pathology, inflammatory process
-Severity: Moderate
-Prognosis: Good w/ appropriate intervention
-Goals: ↓ pain, ↑ function, RTW/ADL`,
-        
-        plan: `Plan:
-1. ${medicalNoteType} rx 3x/wk x 6 wks
-2. Pain mgmt: NSAIDs PRN, ice/heat therapy
-3. PT/OT comprehensive eval & tx
-4. HEP (home exercise program) - daily
-5. F/U in 2 wks
-6. RTC PRN worsening sx
-7. Consider MRI/X-ray if no improvement by 4 wks
-8. Pt education re: activity modification, ergonomics
-9. Work conditioning program when appropriate`
-      };
-      
-      console.log('✅ Medical Terms SOAP 노트 생성 완료');
-      return medicalSoapNote;
-      
-    } else if (params.language === 'en') {
-      // 영어 버전 - 한국어를 기본 영어로 변환
-      const englishNotes = translateKoreanToEnglish(params.shorthandNotes);
-      
-      const englishSoapNote: SoapNote = {
-        patientInfo: params.patientInfo,
-        subjective: `Patient ${params.patientInfo.name} (${params.patientInfo.age}yo ${params.patientInfo.gender === 'male' ? 'male' : 'female'}) presents with chief complaint of:
+    const generateSoapNoteFunction = httpsCallable<GenerateSoapNoteParams, SoapNote>(
+      functions,
+      'generateSoapNoteSecure'
+    );
 
-${englishNotes}
+    const retryResult = await retryWithBackoff(
+      () => generateSoapNoteFunction(params),
+      {
+        maxRetries: 2,
+        baseDelay: 2000,
+        maxDelay: 15000
+      }
+    );
 
-The patient describes onset, duration, quality, and associated symptoms in detail. Reports functional limitations affecting daily activities and work performance.`,
-        
-        objective: `Physical Examination (${params.patientInfo.visitDate}):
-• Vital Signs: Within normal limits
-• Inspection: Visible asymmetry, postural changes noted
-• Palpation: Tenderness and muscle tension in affected area
-• Range of Motion: Active/passive ROM limited to 70-80% of normal
-• Strength Testing: Manual muscle test shows grade 4/5 weakness
-• Special Tests: Positive findings consistent with ${getMedicalNoteType(params.noteType)} dysfunction
-• Functional Assessment: Limited performance, compensatory movements observed
-• Pain Scale: 7/10 at worst, 4/10 at rest`,
-        
-        assessment: `Assessment and Clinical Impression:
-
-Primary Diagnosis: ${getMedicalNoteType(params.noteType)} related functional disorder
-- Acute/subacute pain syndrome
-- Joint mobility restrictions
-- Muscle weakness and endurance deficits
-- Abnormal movement patterns
-
-Prognosis: Good potential for recovery with appropriate treatment program
-Treatment Goals: Pain reduction, functional restoration, injury prevention`,
-        
-        plan: `Treatment Plan:
-
-Phase 1: Acute Management (1-2 weeks)
-   - Pain and inflammation control
-   - Tissue healing promotion
-   - Protection and rest
-
-Phase 2: Recovery Phase (3-4 weeks)
-   - Progressive mobility improvement
-   - Strength training initiation
-   - Functional movement retraining
-
-Phase 3: Strengthening Phase (5-6 weeks)
-   - Advanced functional training
-   - Work/sport-specific activities
-   - Prevention strategies
-
-Frequency: 3 sessions per week
-Duration: 6-8 weeks estimated
-Home Program: Daily exercises for 30 minutes
-Follow-up: Progress evaluation in 2 weeks`
-      };
-      
-      console.log('✅ English SOAP 노트 생성 완료');
-      return englishSoapNote;
-      
-    } else {
-      // 기존 한국어 버전 (기본값)
-      const koreanSoapNote: SoapNote = {
-        patientInfo: params.patientInfo,
-        subjective: `환자 ${params.patientInfo.name}(${params.patientInfo.age}세, ${params.patientInfo.gender === 'male' ? '남성' : '여성'})는 다음의 증상을 호소하였습니다:
-
-${params.shorthandNotes}
-
-통증의 시작 시기와 양상, 악화/완화 요인에 대해 자세히 설명하였으며, 일상생활에서의 제약사항과 불편함을 구체적으로 표현했습니다. 환자는 현재 증상으로 인해 업무 및 일상 활동에 제한이 있다고 보고했습니다.`,
-        
-        objective: `${params.patientInfo.visitDate} 신체 검사 소견:
-
-• 시진: 자세 및 보행 패턴 관찰, 명백한 비대칭성 확인
-• 촉진: 주요 부위 압통 및 근긴장도 증가 확인
-• 관절 가동범위(ROM): 능동/수동 ROM 모두 제한, 정상 범위의 약 70-80% 수준
-• 근력 검사: Manual Muscle Test 결과 Grade 4/5 (약간의 약화 소견)
-• 특수 검사: ${params.noteType} 관련 특수 검사에서 양성 소견
-• 기능적 움직임 평가: 제한적 수행 능력, 보상 움직임 관찰
-• 통증 척도(VAS): 휴식 시 4/10, 활동 시 7/10`,
-        
-        assessment: `${params.noteType} 관련 진단 및 평가:
-
-🔍 주요 진단:
-- ${params.noteType} 관련 기능 장애
-- 급성/아급성 통증 증후군  
-- 관절 가동성 제한 및 근력 약화
-- 기능적 움직임 패턴 이상
-
-📊 현재 상태:
-- 통증 수준: 중등도 (VAS 7/10)
-- 기능 수준: 제한적 (일상생활 70% 수준)
-- 작업 능력: 부분적 제한
-
-🎯 치료 목표:
-1. 통증 완화 및 염증 감소
-2. 관절 가동성 및 근력 회복
-3. 기능적 움직임 정상화
-4. 일상생활 및 작업 복귀
-
-📈 예후: 적절한 치료 프로그램 적용 시 양호한 회복 예상`,
-        
-        plan: `${params.noteType} 종합 치료 계획:
-
-🏥 1단계: 급성기 관리 (1-2주)
-   - 통증 및 염증 완화 치료
-   - 조직 보호 및 치유 환경 조성
-   - 부종 관리 및 근경직 완화
-   - 기본적 일상생활 동작 교육
-
-🔄 2단계: 회복기 치료 (3-4주)
-   - 관절 가동성 점진적 개선
-   - 근력 강화 프로그램 시작 (저강도)
-   - 기능적 움직임 재교육
-   - 자세 교정 및 신체 인식 훈련
-
-💪 3단계: 강화기 치료 (5-6주)
-   - 고강도 기능적 훈련
-   - 작업/스포츠 특이적 움직임 훈련
-   - 지구력 및 협응성 개선
-   - 재발 방지 전략 교육
-
-📋 치료 세부사항:
-• 치료 빈도: 주 3회 (월, 수, 금)
-• 세션 시간: 60분/회
-• 총 치료 기간: 6-8주 예정
-• 홈 프로그램: 매일 30분 자가 운동
-
-📅 평가 일정:
-• 초기 평가: 완료
-• 중간 평가: 2주 후
-• 최종 평가: 6주 후 치료 완료 시
-• 추적 관찰: 치료 완료 1개월 후
-
-⚠️ 주의사항 및 금기:
-- 급성 통증 악화 시 즉시 중단
-- 과도한 활동 및 무리한 동작 금지
-- 정기적 진행 상황 모니터링 필요`
-      };
-      
-      console.log('✅ Korean SOAP 노트 생성 완료');
-      return koreanSoapNote;
+    if (!retryResult.success || !retryResult.data) {
+      throw retryResult.error || new Error('SOAP 노트 생성에 실패했습니다.');
     }
 
+    const result = retryResult.data;
+
+    console.log('SOAP 노트 생성 성공:', {
+      subjectiveLength: result.subjective.length,
+      objectiveLength: result.objective.length,
+      assessmentLength: result.assessment.length,
+      planLength: result.plan.length,
+    });
+
+    return result;
+
   } catch (error) {
-    console.error('Mock SOAP 노트 생성 오류:', error);
+    console.error('SOAP 노트 생성 오류:', error);
+    
+    if (error && typeof error === 'object' && 'code' in error) {
+      const firebaseError = error as { code: string; message: string };
+      
+      switch (firebaseError.code) {
+        case 'functions/unauthenticated':
+          throw new Error('로그인이 필요합니다. 다시 로그인해주세요.');
+        case 'functions/resource-exhausted':
+          throw new Error('API 요청 한도를 초과했습니다. 잠시 후 다시 시도해주세요.');
+        case 'functions/invalid-argument':
+          throw new Error('요청 데이터가 올바르지 않습니다.');
+        case 'functions/internal':
+          throw new Error('서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+        default:
+          throw new Error(firebaseError.message || 'SOAP 노트 생성 중 오류가 발생했습니다.');
+      }
+    }
+    
     throw error;
   }
 };

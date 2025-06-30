@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { generateSoapNote } from '../services/openaiService';
-import { startRecording, stopRecording, transcribeAudio } from '../services/audioService';
+import { generateSoapNote, transcribeAudio } from '../services/openaiService';
 import { Template, PatientInfo, SoapNote } from '../types';
 import TemplateManager from '../components/TemplateManager';
 import SpecialtySelector from '../components/SpecialtySelector';
@@ -292,6 +291,76 @@ const UnifiedSoapNotePage: React.FC = () => {
       ...prev,
       [name]: value
     }));
+  };
+
+  // 고급 오디오 녹음 시작 (AudioSoapNote의 최적화된 설정)
+  const handleStartRecording = async () => {
+    try {
+      setError(null);
+      setCurrentStep('input');
+      
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          channelCount: 1,
+          sampleRate: 16000,
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true
+        }
+      });
+
+      chunksRef.current = [];
+      
+      let mimeType = 'audio/webm;codecs=opus';
+      if (!MediaRecorder.isTypeSupported(mimeType)) {
+        mimeType = 'audio/webm';
+        if (!MediaRecorder.isTypeSupported(mimeType)) {
+          mimeType = 'audio/mp4';
+          if (!MediaRecorder.isTypeSupported(mimeType)) {
+            mimeType = 'audio/wav';
+          }
+        }
+      }
+
+      const recorder = new MediaRecorder(stream, {
+        mimeType,
+        audioBitsPerSecond: 128000
+      });
+
+      recorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          chunksRef.current.push(event.data);
+        }
+      };
+
+      recorder.onstop = () => {
+        const blob = new Blob(chunksRef.current, { type: mimeType });
+        setAudioBlob(blob);
+        stream.getTracks().forEach(track => track.stop());
+        stopAudioLevelMonitoring();
+        stopTimer();
+        
+        // 자동으로 전사 시작
+        handleTranscribe(blob);
+      };
+
+      setMediaRecorder(recorder);
+      recorder.start(1000);
+      setIsRecording(true);
+      startTimer();
+      startAudioLevelMonitoring(stream);
+      
+    } catch (err) {
+      setError('녹음을 시작할 수 없습니다. 마이크 권한을 확인해주세요.');
+      console.error('Recording error:', err);
+    }
+  };
+
+  const handleStopRecording = () => {
+    if (mediaRecorder && isRecording) {
+      mediaRecorder.stop();
+      setIsRecording(false);
+    }
   };
 
   const handleNotesChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {

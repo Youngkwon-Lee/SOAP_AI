@@ -68,6 +68,41 @@ const SoapNotePage: React.FC = () => {
     }));
   };
 
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+
+  const handleStartRecording = async () => {
+    try {
+      setError(null);
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = recorder;
+      recorder.start();
+
+      const audioChunks: Blob[] = [];
+      recorder.ondataavailable = (event) => {
+        audioChunks.push(event.data);
+      };
+
+      recorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+        setAudioBlob(audioBlob);
+        await handleTranscribe(audioBlob);
+      };
+
+      setIsRecording(true);
+    } catch (err) {
+      setError('녹음을 시작할 수 없습니다. 마이크 권한을 확인해주세요.');
+      console.error('Recording error:', err);
+    }
+  };
+
+  const handleStopRecording = () => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+    }
+  };
+
   const handleNotesChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setShorthandNotes(e.target.value);
   };
@@ -113,28 +148,11 @@ const SoapNotePage: React.FC = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const formData = new FormData();
-      formData.append('file', audioData);
-      formData.append('model', 'whisper-1');
-      formData.append('language', 'ko');
-
-      const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${process.env.REACT_APP_OPENAI_API_KEY}`
-        },
-        body: formData
-      });
-
-      if (!response.ok) {
-        throw new Error('음성을 텍스트로 변환하는데 실패했습니다.');
-      }
-
-      const data = await response.json();
-      setTranscribedText(data.text);
-      setShorthandNotes(data.text); // 텍스트 영역에 자동으로 설정
-    } catch (err) {
-      setError('음성을 텍스트로 변환하는 중 오류가 발생했습니다.');
+      const text = await transcribeAudio(audioData);
+      setTranscribedText(text);
+      setShorthandNotes(text); // 텍스트 영역에 자동으로 설정
+    } catch (err: any) {
+      setError(err.message || '음성을 텍스트로 변환하는 중 오류가 발생했습니다.');
       console.error('Transcription error:', err);
     } finally {
       setIsLoading(false);
