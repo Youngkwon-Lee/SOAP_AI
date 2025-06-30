@@ -145,13 +145,13 @@ export const generateSoapNote = async (params: GenerateSoapNoteParams): Promise<
     const result = retryResult.data;
 
     console.log('SOAP 노트 생성 성공:', {
-      subjectiveLength: result.subjective.length,
-      objectiveLength: result.objective.length,
-      assessmentLength: result.assessment.length,
-      planLength: result.plan.length,
+      subjectiveLength: result.data.subjective.length,
+      objectiveLength: result.data.objective.length,
+      assessmentLength: result.data.assessment.length,
+      planLength: result.data.plan.length,
     });
 
-    return result;
+    return result.data;
 
   } catch (error) {
     console.error('SOAP 노트 생성 오류:', error);
@@ -183,12 +183,12 @@ export const generateSoapNote = async (params: GenerateSoapNoteParams): Promise<
 export const transcribeAudio = async (audioData: Blob | File): Promise<string> => {
   try {
     console.log('음성 전사 시작 (Firebase Functions):', {
-      audioSize: audioBlob.size,
-      audioType: audioBlob.type
+      audioSize: audioData.size,
+      audioType: audioData.type
     });
 
     // Blob을 Base64로 변환
-    const arrayBuffer = await audioBlob.arrayBuffer();
+    const arrayBuffer = await audioData.arrayBuffer();
     const base64Audio = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
 
     // Firebase Functions의 callable 함수 호출

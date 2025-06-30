@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { generateSoapNote } from '../services/openaiService';
+import { generateSoapNote, transcribeAudio } from '../services/openaiService';
 
 import { Template, PatientInfo } from '../types';
 import '../styles/SoapNotePage.css';
