@@ -12,6 +12,7 @@
 # production
 /build
 /dist
+/functions/lib
 
 # misc
 .DS_Store
@@ -21,9 +22,13 @@
 .env.test.local
 .env.production.local
 
+# Log files
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+firestore-debug.log
+pglite-debug.log
+firebase-debug.log
 
 # IDE
 .idea/
@@ -33,4 +38,13 @@ yarn-error.log*
 
 # Firebase
 .firebase/
-firebase-debug.log
+
+# Other
+CLAUDE.md
+
+# 민감 데이터 및 오디오
+finetuning_data/user_audio/
+*.m4a
+finetuning_data/*.txt
+
+docs/

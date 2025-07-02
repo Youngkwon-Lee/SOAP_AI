@@ -2,13 +2,50 @@
 
 SOAP AI는 의료진이 SOAP 형식의 진료 기록을 효율적으로 작성할 수 있도록 도와주는 AI 기반 자동화 시스템입니다.
 
+---
+
+## ⚙️ 환경 변수(.env) 예시
+
+아래와 같이 `.env` 또는 `.env.local` 파일을 프로젝트 루트에 생성하세요:
+
+```env
+REACT_APP_FIREBASE_API_KEY=your_firebase_api_key
+REACT_APP_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
+REACT_APP_FIREBASE_PROJECT_ID=your_project_id
+REACT_APP_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
+REACT_APP_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+REACT_APP_FIREBASE_APP_ID=your_app_id
+REACT_APP_OPENAI_API_KEY=your_openai_api_key
+REACT_APP_PINECONE_API_KEY=your_pinecone_api_key
+```
+
+---
+
+## 🚀 배포 및 CI/CD 안내
+
+### Firebase Functions/Hosting 배포
+```bash
+npx firebase deploy --only functions   # Functions만 배포
+npx firebase deploy --only hosting     # Hosting만 배포
+npx firebase deploy                    # 전체 배포
+```
+
+### OpenAI API 키 설정 (Functions)
+```bash
+npx firebase functions:config:set openai.key="sk-..."
+npx firebase deploy --only functions
+```
+
+---
+
 ## 주요 기능
 
-### 🎤 음성 인식 시스템
+### 🎤 음성 인식 시스템 (STT)
 - **OpenAI Whisper API** 기반 한국어 의료 용어 최적화
 - **실시간 음성 품질 모니터링** 및 경고 시스템  
 - **의료 용어 후처리 보정** (5개 카테고리 2,000+ 용어)
 - **브라우저 최적화** 녹음 설정 (16kHz, 노이즈 억제)
+- **Fine-tuning 데이터 준비**: 사용자 맞춤형 STT 모델 고도화를 위한 웹 기반 전사/수정 도구 개발 중.
 
 ### 🧠 개인화 AI 엔진
 - **개인 스타일 학습**: 6개 카테고리 × 10개 패턴 자동 학습
@@ -21,6 +58,24 @@ SOAP AI는 의료진이 SOAP 형식의 진료 기록을 효율적으로 작성�
 - **병원별 템플릿 관리**: 각 병원의 고유 형식 지원
 - **자동 템플릿 매칭**: 전문과별 최적 템플릿 추천
 
+## 🚀 Fine-tuning 모델 고도화 (진행 중)
+
+SOAP AI는 STT 모델의 정확도를 더욱 높이기 위해 Fine-tuning 기능을 개발하고 있습니다. 현재 **사용자 맞춤형 STT 데이터셋 구축**에 집중하고 있으며, 이를 위한 **웹 기반 전사/수정 도구**를 개발 중입니다.
+
+### 웹 기반 전사/수정 도구 (Transcription Editor)
+사용자 녹음 파일의 초벌 STT 결과를 웹 인터페이스에서 편리하게 수정하고, 화자(의료진/환자)를 분리하여 라벨링할 수 있도록 돕는 도구입니다. 이 도구를 통해 수집된 고품질 데이터는 STT 모델의 Fine-tuning에 활용될 예정입니다.
+
+**주요 기능:**
+- 오디오 파일 목록 조회 및 재생
+- 초벌 전사 텍스트 로드 및 편집
+- `[의료진]:`, `[환자]:` 등 화자 태그 간편 삽입
+- 수정된 텍스트 저장
+
+**접근 방법:**
+1.  **데이터 준비:** 사용자 녹음 파일(`finetuning_data/user_audio`)을 OpenAI Whisper API로 초벌 전사하여 `finetuning_data/transcription_draft.txt` 파일을 생성합니다.
+2.  **수동 수정 및 라벨링:** 웹 기반 도구를 사용하여 `transcription_draft.txt` 파일의 내용을 수정하고, 화자 정보를 추가합니다.
+3.  **Fine-tuning 데이터셋 생성:** 수정된 텍스트를 기반으로 OpenAI Fine-tuning API가 요구하는 JSONL 형식의 데이터셋을 생성합니다.
+
 ## 🔍 Vector Database (선택사항)
 
 Vector Database는 개인화 기능을 크게 향상시키는 선택적 기능입니다:
@@ -29,7 +84,7 @@ Vector Database는 개인화 기능을 크게 향상시키는 선택적 기능�
 1. [Pinecone](https://www.pinecone.io/)에서 무료 계정 생성
 2. API 키 발급 후 환경 변수에 추가:
    ```env
-   REACT_APP_PINECONE_API_KEY=your_pinecone_api_key_here
+   REACT_APP_PINECONE_API_KEY=your_pinecone_api_key
    ```
 
 ### Vector DB 활성화 시 추가 기능
